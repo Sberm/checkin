@@ -1,0 +1,276 @@
+@media (min-width:120px) and (max-width:1025px){ /* smartphones, iPhone, portrait 480x320 phones */
+
+	p.date {
+		color: #15A100;
+		font-size: 1.4rem;
+		font-weight: bold;
+		flex: 1 1 100%;
+		text-align: left;
+		margin: 1rem 0;
+	}
+
+	#quit-button {
+        border-radius: 10px;
+        margin: 1.2rem 0.6rem;
+        background-color: #1BC700;
+        height: 1.3rem;
+        width: 1.3rem;
+        position: absolute;
+        top: 0;
+        right: 0;
+        z-index: 2;
+        display: flex;
+        padding: 15px;
+	}
+
+	.pop-up {
+		display: flex;
+        justify-content: center;
+		align-items: center; /*不加align-items会导致图片stretch*/
+		width: 100vw;
+		height: 100vh;
+		position: fixed; 
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		background-color: rgba(0, 0, 0, 0.47);
+		z-index:1;
+	}
+
+	.today {
+		color: #1BC700;
+	}
+
+	p {
+		margin: 0;
+	}
+
+	#upload-button {
+		cursor: pointer;
+		background-color: #1BC700;
+		border: none;
+		padding: 0.5rem;
+		margin: 1rem 0;
+		border-radius: 5px;
+		color: white;
+		font-size: 0.9rem;
+	}
+
+	h1 {
+		text-align: center;
+	}
+
+	a {
+		color: inherit;
+		text-decoration: none;
+	}
+
+	.unsigned {
+		color: #BFBDBC;
+	}
+
+	.signed {
+		color: #1BC700;
+	}
+
+	img {
+		max-height: 100%;
+		max-width: 100%;
+	}
+
+	.checkin-imgs-container {
+		cursor: pointer;
+		width: 7rem;
+		height: 7rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.checkin-imgs {
+		margin-top: 1rem;
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 0.3rem;
+		width: 100%;
+		row-gap: 0.1rem;
+	}
+
+	.checkin-names {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		gap: 1rem;
+		font-size: 1.2rem;
+		font-weight: bold;
+		flex-wrap: wrap;
+		row-gap: 0px;
+	}
+
+	.checkin-date {
+		font-size: 1rem;
+		justify-self: center;
+	}
+
+	.checkin-container {
+		/*display: flex;*/
+		/*gap: 1.5rem;*/
+		/*align-items: center;*/
+		margin-bottom: 1rem;
+	}
+
+	body {
+		background-color: #EFECEE;
+	}
+
+	.checkin-background {
+		width: 80%;
+		margin: 2rem auto 2rem auto;
+		background-color: white;
+		border-radius: 20px;
+		padding: 0.7rem;
+	}
+
+}
+
+@media (min-width:1025px) { 
+
+	p.date {
+		color: #15A100;
+		font-size: 1.7rem;
+		font-weight: bold;
+		flex: 1 1 100%;
+		text-align: left;
+		margin: 1rem 0;
+	}
+
+	#quit-button {
+		cursor: pointer;
+	}
+
+	#quit-button {
+        border-radius: 5px;
+        margin: 1.5rem 2.5rem 0 0;
+        background-color: #1BC700;
+        height: 1rem;
+        width: 1rem;
+        position: absolute;
+        top: 0;
+        right: 0;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px;
+	}
+
+	.pop-up {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		width: 100vw;
+		height: 100vh;
+		position: fixed; 
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		background-color: rgba(0, 0, 0, 0.47);
+		z-index:1;
+	}
+	
+	.today {
+		color: #1BC700;
+	}
+
+	p {
+		margin: 0;
+	}
+
+	#upload-button {
+		cursor: pointer;
+		background-color: #1BC700;
+		border: none;
+		padding: 0.5rem;
+		margin: 1rem 0;
+		border-radius: 5px;
+		color: white;
+		font-size: 0.9rem;
+	}
+
+	h1 {
+		text-align: center;
+	}
+
+	a {
+		color: inherit;
+		text-decoration: none;
+	}
+
+	.unsigned {
+		color: #BFBDBC;
+	}
+
+	.signed {
+		color: #1BC700;
+	}
+
+	img {
+		max-height: 100%;
+		max-width: 100%;
+	}
+
+	.checkin-imgs-container {
+		cursor: pointer;
+		width: 12rem;
+		height: 12rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.checkin-imgs {
+		margin-top: 1rem;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+		row-gap: 0.5rem;
+		width: 60rem;
+		justify-content: center;
+	}
+
+	.checkin-names {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		gap: 1rem;
+		font-size: 1.2rem;
+		font-weight: bold;
+	}
+
+	.checkin-date {
+		font-size: 1rem;
+		justify-self: center;
+	}
+
+	.checkin-container {
+		display: flex;
+		gap: 1.5rem;
+		align-items: center;
+		margin-bottom: 0.2rem;
+	}
+
+	body {
+		background-color: #EFECEE;
+	}
+
+	.checkin-background {
+		width: max-content;
+		margin: 2rem auto 2rem auto;
+		background-color: white;
+		border-radius: 20px;
+		padding: 1.7rem;
+	}
+}

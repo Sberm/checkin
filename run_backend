@@ -1,0 +1,1 @@
+nohup ./backend/server > ./server.log &

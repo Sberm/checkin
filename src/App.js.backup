@@ -1,0 +1,53 @@
+import "./checkin.css"
+import React, {useEffect, useState} from "react"
+
+function fetchRecords(setRecords) {
+	fetch("https://sberm.cn/checkin-record", {
+		headers: {
+			Accept: 'application/json',
+		},
+		mode: "cors"
+	})
+	.then(response => {
+		return response.json()
+	})
+	.then(data => {
+		setRecords(data)
+	})
+}
+
+function OnLoad() {
+	const [records, setRecords] = useState([])
+	useEffect(() => {
+		fetchRecords(setRecords)
+	}, [])
+	return records
+}
+
+export default function Main() {
+
+	let records = OnLoad()
+	console.log("what?")
+	console.log(records)
+
+
+	//let foo = CheckInApp("foo", "bar")
+	//console.log(foo)
+
+	return (
+		<h1>学习打卡</h1>
+	)
+}
+
+//function CheckInApp(users, checkinDate) {
+	//return (
+		//<div className="checkin-background">
+			//<div className="checkin-container">
+				//<div className="checkin-date">{checkinDate}</div>
+				//<div className="checkin-names">
+					//{users.map(user => <div><a href={user.link}><span>{user.name}</span></a></div>)}
+				//</div>
+			//</div>
+		//</div>
+	//);
+//}

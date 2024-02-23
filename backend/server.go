@@ -220,7 +220,7 @@ func GetImages(db *DB) gin.HandlerFunc{
 	return gin.HandlerFunc(fn)
 }
 
-func sendEmail(recipients []User) {
+func sendEmail(recipients []User, consec []int) {
 	host_name := "smtp.gmail.com"
 	auth := smtp.PlainAuth("", "howardchu95@gmail.com", "pmdf eplw fome sunx", host_name)
 	from := "From: Sberm 打卡网站"
@@ -228,12 +228,14 @@ func sendEmail(recipients []User) {
 	ct := time.Now()
 	date := ct.Format("2006年01月02日")
 
-	for _, recipient := range recipients {
+	var body string
+	for i, recipient := range recipients {
 		fmt.Println("Sending email notification to:", recipient.name)
 		// Sprintf不能和\r\n一起使用
 		subject := fmt.Sprintf("Subject: 您%s没有打卡",date)
 		mime := "MIME-version: 1.0\r\nContent-Type: text/html; charset=utf-8\r\n\r\n"
-		body := fmt.Sprintf(`<html>
+		if (consec[i] == 1) {
+			body = fmt.Sprintf(`<html>
 <body style="background-color: #B4B4B4;">
 	<div style="background-color: white; border-radius: 20px; margin: 2rem 2rem;">
 		<p><span>%s 先生/女士，您今天(%s)还没有在学习打卡网站</span>
@@ -242,6 +244,17 @@ func sendEmail(recipients []User) {
 	<div>
 </body>
 </html>`, recipient.name, ct.Format("2006-01月02日")[5:])
+		} else {
+			body = fmt.Sprintf(`<html>
+<body style="background-color: #B4B4B4;">
+	<div style="background-color: white; border-radius: 20px; margin: 2rem 2rem;">
+		<p><span>%s 先生/女士，您截止至(%s)已经连续%d天没有在学习打卡网站</span>
+		<span>sberm.cn/checkin</span>
+		<span>上打卡，请您在空闲时补打卡，谢谢。</span></p>
+	<div>
+</body>
+</html>`, recipient.name, ct.Format("2006-01月02日")[5:], consec[i])
+		}
 		msg := []byte(from + "\r\n" + subject + "\r\n" + mime + body)
 
 		err := smtp.SendMail(host_name+":587", auth, from, []string{recipient.email}, msg)
@@ -269,7 +282,7 @@ func EmailNotif(db *DB) {
 		if h == timeToSendEmail["hour"] &&
 		   m == timeToSendEmail["minute"] &&
 		   s == timeToSendEmail["second"] {
-		
+
 			// 取所有users和他们的email
 			IMG_DB_NAME := "users"
 			rows, err := db.db.Query(fmt.Sprintf(`
@@ -296,8 +309,13 @@ func EmailNotif(db *DB) {
 			// 查找需要发邮件提醒的用户(未打卡用户)
 			dbName := "checkin"
 			var recipients []User
+			var consec []int
 			checked := false
 			for _,user := range users {
+				// delete this
+				if (user.name != "陈梓恒") {
+					continue
+				}
 				err := db.db.QueryRow(fmt.Sprintf(`
 					SELECT EXISTS(SELECT * FROM %s
 					WHERE checkin_date = '%s'
@@ -308,10 +326,34 @@ func EmailNotif(db *DB) {
 					log.Print(err)
 				}
 				if !checked {
-				   recipients = append(recipients, user)
+					var last_checkin time.Time
+					// TODO: how many days in a row
+					err := db.db.QueryRow(fmt.Sprintf(`
+						SELECT MAX(checkin_date) FROM %s
+						WHERE checkin_date <= '%s'
+						AND name = '%s'
+					`, dbName, date, user.name)).Scan(&last_checkin)
+					var y2 int
+					var m2 time.Month 
+					var d2 int
+					if err == sql.ErrNoRows {
+						y2, m2, d2 = 2023, time.Month(9), 24
+					} else if err != nil {
+						log.Print(err)
+					} else {
+						y2, m2, d2 = last_checkin.Date()
+					}
+
+					y1, m1, d1 := ct.Date()
+					date1 := time.Date(y1, m1, d1, 0, 0, 0, 0, time.UTC)
+					date2 := time.Date(y2, m2, d2, 0, 0, 0, 0, time.UTC)
+					diff := int(date1.Sub(date2).Hours()) / 24 - 1
+
+					recipients = append(recipients, user)
+					consec = append(consec, diff)
 				}
 			}
-			sendEmail(recipients)
+			sendEmail(recipients, consec)
 		}
 		time.Sleep(200 * time.Millisecond)
 	}

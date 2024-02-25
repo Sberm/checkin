@@ -312,10 +312,6 @@ func EmailNotif(db *DB) {
 			var consec []int
 			checked := false
 			for _,user := range users {
-				// delete this
-				if (user.name != "陈梓恒") {
-					continue
-				}
 				err := db.db.QueryRow(fmt.Sprintf(`
 					SELECT EXISTS(SELECT * FROM %s
 					WHERE checkin_date = '%s'

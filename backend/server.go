@@ -268,8 +268,8 @@ func EmailNotif(db *DB) {
 
 	// 发邮件的时间
 	timeToSendEmail := map[string]int {
-		"hour": 21,
-		"minute": 30,
+		"hour": 22,
+		"minute": 25,
 		"second": 0,
 	}
 
@@ -350,6 +350,7 @@ func EmailNotif(db *DB) {
 				}
 			}
 			sendEmail(recipients, consec)
+			time.Sleep(1 * time.Second)
 		}
 		time.Sleep(200 * time.Millisecond)
 	}

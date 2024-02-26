@@ -113,8 +113,6 @@ func GetCheckinRecord(db *DB) gin.HandlerFunc{
 			}
 		}
 
-		//fmt.Println("ok this is the record", checkinRecordsList)
-
 		c.Header("Access-Control-Allow-Origin", "*")
 		c.JSON(http.StatusOK, gin.H{
 			"code": code,
@@ -225,37 +223,61 @@ func sendEmail(recipients []User, consec []int) {
 	auth := smtp.PlainAuth("", "howardchu95@gmail.com", "pmdf eplw fome sunx", host_name)
 	from := "From: Sberm 打卡网站"
 
+	fmt_str := "2006年01月02日"
 	ct := time.Now()
-	date := ct.Format("2006年01月02日")
-
+	date := ct.Format(fmt_str)[8:]
 	var body string
 	for i, recipient := range recipients {
+
 		fmt.Println("Sending email notification to:", recipient.name)
+
 		// Sprintf不能和\r\n一起使用
 		subject := fmt.Sprintf("Subject: 您%s没有打卡",date)
 		mime := "MIME-version: 1.0\r\nContent-Type: text/html; charset=utf-8\r\n\r\n"
 		if (consec[i] == 1) {
-			body = fmt.Sprintf(`<html>
-<body style="background-color: #B4B4B4;">
-	<div style="background-color: white; border-radius: 20px; margin: 2rem 2rem;">
-		<p><span>%s 先生/女士，您今天(%s)还没有在学习打卡网站</span>
-		<span>sberm.cn/checkin</span>
-		<span>上打卡，请您在空闲时补打卡，谢谢。</span></p>
-	<div>
-</body>
-</html>`, recipient.name, ct.Format("2006-01月02日")[5:])
+			body = fmt.Sprintf(`
+				<p><span>&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="hl">%s</span><span>先生/女士，您今天(</span><span class="hl">%s</span>)<span>还没有在学习打卡网站</span>
+				<span>sberm.cn/checkin</span>
+				<span>上打卡，请您在空闲时补打卡，谢谢。</span></p>`, recipient.name, date)
 		} else {
-			body = fmt.Sprintf(`<html>
-<body style="background-color: #B4B4B4;">
-	<div style="background-color: white; border-radius: 20px; margin: 2rem 2rem;">
-		<p><span>%s 先生/女士，您截止至(%s)已经连续%d天没有在学习打卡网站</span>
-		<span>sberm.cn/checkin</span>
-		<span>上打卡，请您在空闲时补打卡，谢谢。</span></p>
-	<div>
-</body>
-</html>`, recipient.name, ct.Format("2006-01月02日")[5:], consec[i])
+			body = fmt.Sprintf(`
+				<p><span>&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="hl">%s</span><span>先生/女士，您截止至(</span><span class="hl">%s</span>)<span>已经连续</span><span class="hl">%d</span><span>天没有在学习打卡网站</span>
+				<span>sberm.cn/checkin</span>
+				<span>上打卡，请您在空闲时补打卡，谢谢。</span></p>`, recipient.name, date, consec[i])
 		}
-		msg := []byte(from + "\r\n" + subject + "\r\n" + mime + body)
+
+		html_txt := fmt.Sprintf(`
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<style>
+.box {
+	background-color: white;
+	border-radius: 20px;
+    padding: 0.6rem;
+}
+.bg {
+	background-color: #ECECEC;
+	border-radius: 20px;
+	height: 18rem;
+	padding: 2rem;
+}
+.hl {
+	color: #1bc700;
+}
+</style>
+</head>
+<body>
+<div class="bg">
+<div class="box">
+%s
+</div>
+</div>
+</body>
+</html>
+`, body)
+
+		msg := []byte(from + "\r\n" + subject + "\r\n" + mime + html_txt)
 
 		err := smtp.SendMail(host_name+":587", auth, from, []string{recipient.email}, msg)
 		if err != nil {
@@ -268,8 +290,8 @@ func EmailNotif(db *DB) {
 
 	// 发邮件的时间
 	timeToSendEmail := map[string]int {
-		"hour": 22,
-		"minute": 25,
+		"hour": 21,
+		"minute": 30,
 		"second": 0,
 	}
 
@@ -321,9 +343,9 @@ func EmailNotif(db *DB) {
 				if err != nil {
 					log.Print(err)
 				}
+				// change
 				if !checked {
 					var last_checkin time.Time
-					// TODO: how many days in a row
 					err := db.db.QueryRow(fmt.Sprintf(`
 						SELECT MAX(checkin_date) FROM %s
 						WHERE checkin_date <= '%s'

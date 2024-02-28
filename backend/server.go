@@ -365,7 +365,7 @@ func EmailNotif(db *DB) {
 					y1, m1, d1 := ct.Date()
 					date1 := time.Date(y1, m1, d1, 0, 0, 0, 0, time.UTC)
 					date2 := time.Date(y2, m2, d2, 0, 0, 0, 0, time.UTC)
-					diff := int(date1.Sub(date2).Hours()) / 24 - 1
+					diff := int(date1.Sub(date2).Hours()) / 24
 
 					recipients = append(recipients, user)
 					consec = append(consec, diff)

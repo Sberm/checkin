@@ -259,16 +259,25 @@ func sendEmail(recipients []User, consec []int) {
 .bg {
 	background-color: #ECECEC;
 	border-radius: 20px;
-	height: 18rem;
 	padding: 2rem;
 }
 .hl {
 	color: #1bc700;
 }
+.hd {
+	margin-bottom: 1rem;
+}
+.hdt {
+	font-size: 25px;
+	font-weight: bold;
+}
 </style>
 </head>
 <body>
 <div class="bg">
+<div class="box hd">
+	<p class="hdt hl">Sberm打卡网站 ✅</p>
+</div>
 <div class="box">
 %s
 </div>
@@ -334,6 +343,9 @@ func EmailNotif(db *DB) {
 			var consec []int
 			checked := false
 			for _,user := range users {
+				if user.name != "朱皓炜" {
+					continue;
+				}
 				err := db.db.QueryRow(fmt.Sprintf(`
 					SELECT EXISTS(SELECT * FROM %s
 					WHERE checkin_date = '%s'
@@ -343,7 +355,6 @@ func EmailNotif(db *DB) {
 				if err != nil {
 					log.Print(err)
 				}
-				// change
 				if !checked {
 					var last_checkin time.Time
 					err := db.db.QueryRow(fmt.Sprintf(`

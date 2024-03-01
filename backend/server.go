@@ -231,7 +231,6 @@ func sendEmail(recipients []User, consec []int) {
 
 		fmt.Println("Sending email notification to:", recipient.name)
 
-		// Sprintf不能和\r\n一起使用
 		subject := fmt.Sprintf("Subject: 您%s没有打卡",date)
 		mime := "MIME-version: 1.0\r\nContent-Type: text/html; charset=utf-8\r\n\r\n"
 		if (consec[i] == 1) {

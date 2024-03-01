@@ -94,6 +94,7 @@ export default function Main() {
 
 	let checkinRecords = records.checkinRecord;
 
+	// TODO: indexing is fine, binary search is unnecessary
 	if (checkinRecords) {
 		for (let index = 0; index < checkinRecords.length; index++) {
 			let date = new Date(checkinRecords[index].checkinDate)

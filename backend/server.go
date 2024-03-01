@@ -354,6 +354,7 @@ func EmailNotif(db *DB) {
 				if err != nil {
 					log.Print(err)
 				}
+				// if a user didn't check in
 				if !checked {
 					var last_checkin time.Time
 					err := db.db.QueryRow(fmt.Sprintf(`
@@ -372,6 +373,7 @@ func EmailNotif(db *DB) {
 						y2, m2, d2 = last_checkin.Date()
 					}
 
+					// set time in date to 00:00
 					y1, m1, d1 := ct.Date()
 					date1 := time.Date(y1, m1, d1, 0, 0, 0, 0, time.UTC)
 					date2 := time.Date(y2, m2, d2, 0, 0, 0, 0, time.UTC)
@@ -382,6 +384,7 @@ func EmailNotif(db *DB) {
 				}
 			}
 			sendEmail(recipients, consec)
+			// make sure it doesn't send email twice
 			time.Sleep(1 * time.Second)
 		}
 		time.Sleep(200 * time.Millisecond)

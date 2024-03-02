@@ -31,3 +31,6 @@ images
 *.gif
 
 server
+
+# in case
+backend

@@ -43,7 +43,7 @@ function cut(data, index, days) {
 		while (i < days && imageIndex < data.length) {
 			const d = new Date(data[imageIndex].checkinDate)
 			d.setHours(0,0,0,0)
-			if (compareDate(d, tempDate) != 0) {
+			if (compareDate(d, tempDate) !== 0) {
 				i += 1
 				tempDate.setTime(d.getTime())
 			}
@@ -51,31 +51,54 @@ function cut(data, index, days) {
 		}
 		i = 0
 	}
-	//console.log("pd",[...data.slice(left, imageIndex - 1)])
 	return [...data.slice(left, imageIndex - 1)]
 }
 
 async function uploadImages() {
-	try {
-		const url = `https://sberm.cn/checkin-upload-imgs`
-		//const file = document.getElementById("checkin-image").files[0]
-		const formData = new FormData()
-		formData.append("file", imgFile)
+	//try {
+		//const url = `https://sberm.cn/checkin-upload-imgs`
+		//const formData = new FormData()
+		//formData.append("file", imgFile)
 
-		const responseR = await fetch(url, {
-			method: "POST",
-			headers: {
-				Accept: 'application/json',
-			},
-			mode: "cors",
-			body: formData
-		})
+		//const responseR = await fetch(url, {
+			//method: "POST",
+			//headers: {
+				//Accept: 'application/json',
+			//},
+			//mode: "cors",
+			//body: formData
+		//})
 
-		const response = await responseR.json()
-		return response.code
-	} catch(err) {
-		console.log(err)
-	}
+		//const response = await responseR.json()
+		//return response.code
+	//} catch(err) {
+		//console.log(err)
+	//}
+	
+	const url = "https://sberm.cn/checkin-upload-imgs"
+	let xhr = new XMLHttpRequest()
+	let formData = new FormData()
+	formData.append("file", imgFile)
+
+	xhr.addEventListener("load", function() {
+		// if the request succeeded
+		if (xhr.status >= 200 && xhr.status < 300) {
+			// print the response to the xhr
+			console.log(xhr.response);
+		}
+	});
+
+	xhr.upload.addEventListener("progress", (event) => {
+		if (event.lengthComputable) {
+            let complete = (event.loaded / event.total * 100 | 0);
+			console.log(complete)
+        }
+	})
+
+	xhr.open("POST", url, true)
+	xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest')
+	xhr.setRequestHeader('Access-Control-Allow-Origin', '*')
+	xhr.send(formData)
 }
 
 async function uploadImagesDB() {

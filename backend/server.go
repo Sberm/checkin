@@ -496,7 +496,7 @@ func main() {
 
 	go EmailNotif(db)
 	// test 
-	testEmail(db)
+	// testEmail(db)
 
 	StartRouters(db)
 	defer db.db.Close()

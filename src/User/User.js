@@ -55,50 +55,52 @@ function cut(data, index, days) {
 }
 
 async function uploadImages() {
-	try {
-		const url = `https://sberm.cn/checkin-upload-imgs`
-		const formData = new FormData()
+	// try {
+	// 	const url = `https://sberm.cn/checkin-upload-imgs`
+	// 	const formData = new FormData()
+	// 	formData.append("file", imgFile)
+
+	// 	const responseR = await fetch(url, {
+	// 		method: "POST",
+	// 		headers: {
+	// 			Accept: 'application/json',
+	// 		},
+	// 		mode: "cors",
+	// 		body: formData
+	// 	})
+
+	// 	const response = await responseR.json()
+	// 	return response.code
+	// } catch(err) {
+	// 	console.log(err)
+	// }
+	 
+
+	const p = new Promise(function (resolve, reject) {
+		const url = "https://sberm.cn/checkin-upload-imgs"
+		let xhr = new XMLHttpRequest()
+		let formData = new FormData()
 		formData.append("file", imgFile)
 
-		const responseR = await fetch(url, {
-			method: "POST",
-			headers: {
-				Accept: 'application/json',
-			},
-			mode: "cors",
-			body: formData
+		if (xhr.readyState == 4) {
+			resolve(JSON.parse(xhr.response));
+		}
+
+		xhr.upload.addEventListener("progress", (event) => {
+			let complete = (event.loaded / event.total * 100 | 0);
+			console.log(complete)
 		})
 
-		const response = await responseR.json()
-		return response.code
-	} catch(err) {
-		console.log(err)
-	}
-	
-	// const url = "https://sberm.cn/checkin-upload-imgs"
-	// let xhr = new XMLHttpRequest()
-	// let formData = new FormData()
-	// formData.append("file", imgFile)
+		xhr.upload.addEventListener("load", (event) => {
+			console.log("loaded")
+		});
+		xhr.open("POST", url, true)
+		xhr.send(formData)
+	})
 
-	// xhr.addEventListener("load", function() {
-	// 	// if the request succeeded
-	// 	if (xhr.status >= 200 && xhr.status < 300) {
-	// 		// print the response to the xhr
-	// 		console.log(xhr.response);
-	// 	}
-	// });
+	let r = await p;
 
-	// xhr.upload.addEventListener("progress", (event) => {
-	// 	if (event.lengthComputable) {
-    //         let complete = (event.loaded / event.total * 100 | 0);
-	// 		console.log(complete)
-    //     }
-	// })
-
-	// xhr.open("POST", url, true)
-	// xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest')
-	// xhr.setRequestHeader('Access-Control-Allow-Origin', '*')
-	// xhr.send(formData)
+	return r.code
 }
 
 async function uploadImagesDB() {
@@ -123,6 +125,7 @@ async function uploadImagesDB() {
 
 		const response = await responseR.json()
 		return response.code
+
 	} catch(err) {
 		console.log(err)
 	}
@@ -213,11 +216,12 @@ function UploadButton(props) {
 					lastModified: file.lastModified,
 				});
 
-				let codeB = await uploadImages() === 200 ? true : false
-				codeB = codeB && await uploadImagesDB() === 200 ? true : false
-				codeB = codeB && await checkin() === 200 ? true : false
+				let a = uploadImages() === 200 ? true : false
+				let b = await uploadImagesDB() === 200 ? true : false
+				let c = await checkin() === 200 ? true : false
+				let code = a && b && c
 
-				if(codeB) {
+				if(code) {
 					alert("上传成功")
 					window.location.reload();
 				} else {

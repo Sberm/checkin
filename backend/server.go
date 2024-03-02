@@ -468,6 +468,17 @@ func EmailNotif(db *DB) {
 	}
 }
 
+func Cors() gin.HandlerFunc {
+	fn := func (c* gin.Context) {
+		c.Header("Access-Control-Allow-Origin", "*")
+		if c.Request.Method == "OPTIONS"  {
+			c.JSON(http.StatusOK, "")
+		}
+		c.Next()
+	}
+	return gin.HandlerFunc(fn)
+}
+
 func ConnectDB(db *DB) {
 	connStr := "user=root dbname=root password=112358 sslmode=disable"
 	db_, err := sql.Open("postgres", connStr)
@@ -485,6 +496,7 @@ func StartRouters(db *DB) {
 	r.POST("/checkin-upload-imgs", UploadImages)
 	r.POST("/checkin-upload-imgs-db", UploadImagesDB(db))
 	r.GET("/checkin-get-imgs", GetImages(db))
+	r.Use(Cors())
 	r.Run("127.0.0.1:14175");
 }
 

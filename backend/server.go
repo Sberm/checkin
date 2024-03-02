@@ -275,7 +275,7 @@ func sendEmail(recipients []User, consec []int) {
 <body>
 <div class="bg">
 <div class="box hd">
-	<p class="hdt hl">Sberm打卡网站 ✅</p>
+	<p class="hdt"><span class="hl">Sberm打卡网站</span> ✅</p>
 </div>
 <div class="box">
 %s
@@ -291,6 +291,86 @@ func sendEmail(recipients []User, consec []int) {
 		if err != nil {
 			log.Fatal(err)
 		}
+	}
+}
+
+func testEmail(db *DB) {
+
+	fmt.Println("Email test")
+
+	ct := time.Now()
+	date := ct.Format("2006-01-02")
+
+	// 取所有users和他们的email
+	IMG_DB_NAME := "users"
+	rows, err := db.db.Query(fmt.Sprintf(`
+		SELECT name, email 
+		FROM %s
+	`, IMG_DB_NAME))
+	if err != nil {
+		log.Print(err)
+	}
+	var users []User
+	for rows.Next() {
+		var name string
+		var email string
+		err := rows.Scan(&name, &email)
+		if err != nil {
+			log.Print(err)
+		}
+		users = append(users, User {
+			name: name,
+			email: email,
+		})
+	}
+
+	// 查找需要发邮件提醒的用户(未打卡用户)
+	dbName := "checkin"
+	var recipients []User
+	var consec []int
+	checked := false
+	for _,user := range users {
+		if user.name != "朱皓炜" {
+			continue;
+		}
+		err := db.db.QueryRow(fmt.Sprintf(`
+			SELECT EXISTS(SELECT * FROM %s
+			WHERE checkin_date = '%s'
+			AND name = '%s'
+			LIMIT 1)
+		`, dbName, date, user.name)).Scan(&checked)
+		if err != nil {
+			log.Print(err)
+		}
+		// if a user didn't check in
+		if !checked {
+			var last_checkin time.Time
+			err := db.db.QueryRow(fmt.Sprintf(`
+				SELECT MAX(checkin_date) FROM %s
+				WHERE checkin_date <= '%s'
+				AND name = '%s'
+			`, dbName, date, user.name)).Scan(&last_checkin)
+			var y2 int
+			var m2 time.Month 
+			var d2 int
+			if err == sql.ErrNoRows {
+				y2, m2, d2 = 2023, time.Month(9), 24
+			} else if err != nil {
+				log.Print(err)
+			} else {
+				y2, m2, d2 = last_checkin.Date()
+			}
+
+			// set time in date to 00:00
+			y1, m1, d1 := ct.Date()
+			date1 := time.Date(y1, m1, d1, 0, 0, 0, 0, time.UTC)
+			date2 := time.Date(y2, m2, d2, 0, 0, 0, 0, time.UTC)
+			diff := int(date1.Sub(date2).Hours()) / 24
+
+			recipients = append(recipients, user)
+			consec = append(consec, diff)
+		}
+		sendEmail(recipients, consec)
 	}
 }
 
@@ -342,9 +422,6 @@ func EmailNotif(db *DB) {
 			var consec []int
 			checked := false
 			for _,user := range users {
-				if user.name != "朱皓炜" {
-					continue;
-				}
 				err := db.db.QueryRow(fmt.Sprintf(`
 					SELECT EXISTS(SELECT * FROM %s
 					WHERE checkin_date = '%s'
@@ -413,9 +490,14 @@ func StartRouters(db *DB) {
 
 func main() {
 	syscall.Chdir("/root/hw/checkin")
+
 	var db *DB = new(DB)
 	ConnectDB(db)
+
 	go EmailNotif(db)
+	// test 
+	testEmail(db)
+
 	StartRouters(db)
 	defer db.db.Close()
 }

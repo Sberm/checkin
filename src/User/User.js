@@ -7,7 +7,6 @@ const today = new Date(Date.now())
 const offset = today.getTimezoneOffset()
 const checkinDate = new Date(today.getTime() - (offset*60*1000)).toISOString().split('T')[0]
 let imagePointer = ""
-let imgFile;
 
 async function fetchImages(setImages) {
 	try {
@@ -54,13 +53,11 @@ function cut(data, index, days) {
 	return [...data.slice(left, imageIndex - 1)]
 }
 
-async function uploadImages(setPercent) {
+async function uploadImages(formData, setPercent) {
 
 	const p = new Promise(function (resolve, reject) {
 		const url = "https://sberm.cn/checkin-upload-imgs"
 		let xhr = new XMLHttpRequest()
-		let formData = new FormData()
-		formData.append("file", imgFile)
 
 		xhr.onload = () => {
 			const res = JSON.parse(xhr.response)
@@ -84,14 +81,12 @@ async function uploadImages(setPercent) {
 	return r.code
 }
 
-async function uploadImagesDB() {
+async function uploadImagesDB(imgUrls) {
 	try {
-		const imgUrl = imgFile.name;
-		
 		const imgData = {
 			checkinDate: checkinDate,
 			name: name,
-			imgUrl: imgUrl
+			imgUrls: imgUrls,
 		}
 
 		const url = "https://sberm.cn/checkin-upload-imgs-db"
@@ -177,31 +172,39 @@ function UploadButton(props) {
 					alert("请选择图片")
 					return
 				}
-				const file = document.getElementById("checkin-image").files[0];
-				if (file.name.match(reg) == null) {
-					alert("请选择图片")
-					return
+
+				let formData = new FormData()
+				let imgUrls = []
+				const files = document.getElementById("checkin-image").files
+				for (let i = 0;i < files.length; i++) {
+					const file = files[i];
+					if (file.name.match(reg) == null) {
+						alert("请选择图片")
+						return
+					}
+
+					const md5Suffix = await md5FromFile();
+
+					const fileName = file.name;
+					const lastDot = fileName.lastIndexOf(".");
+					const name = fileName.substring(0, lastDot); 
+					const ext = fileName.substring(lastDot+1);
+
+					// write image file
+					const finalName = `${name}-${md5Suffix}.${ext}`
+					const imgFile = new File([file], finalName, {
+						type: file.type,
+						lastModified: file.lastModified,
+					});
+					formData.append('file', imgFile);
+					imgUrls.push(finalName)
 				}
-
-
-				const md5Suffix = await md5FromFile();
-
-				const fileName = file.name;
-				const lastDot = fileName.lastIndexOf(".");
-				const name = fileName.substring(0, lastDot); 
-				const ext = fileName.substring(lastDot+1);
-
-				// write image file
-				imgFile = new File([file], `${name}-${md5Suffix}.${ext}`, {
-					type: file.type,
-					lastModified: file.lastModified,
-				});
 
 				props.setUploading(true)
 				props.setUploadStatus("上传中")
 
-				let a = await uploadImages(props.setPercent) === 200 ? true : false
-				let b = await uploadImagesDB() === 200 ? true : false
+				let a = await uploadImages(formData, props.setPercent) === 200 ? true : false
+				let b = await uploadImagesDB(imgUrls) === 200 ? true : false
 				let c = await checkin() === 200 ? true : false
 				let code = a && b && c
 
@@ -298,7 +301,7 @@ export default function PageRoot() {
 			<h1>点击签到</h1>
 			<div className="checkin-background">
 				<a href="javascript:void()">
-					<input type="file" id="checkin-image" name="checkin-image" accept="image/*" /><br/>
+					<input type="file" id="checkin-image" name="checkin-image" multiple accept="image/*" /><br/>
 				</a>
 				<CheckinButton />&nbsp;&nbsp;
 			 	<UploadButton setUploading={setUploading} setPercent={setPercent} setUploadStatus={setUploadStatus} setImages={setImages}/>

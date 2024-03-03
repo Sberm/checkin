@@ -24,7 +24,7 @@ type CheckinRecord struct {
 type CheckinImage struct {
 	CheckinDate     string    `json:"checkinDate"`
 	Name  			string    `json:"name"`
-	ImgUrl			string	  `json:"imgUrl"`
+	ImgUrls			[]string  `json:"imgUrls"`
 }
 
 type ReturnImage struct {
@@ -126,17 +126,25 @@ func UploadImages(c *gin.Context) {
 	SAVE_DST := "./images"
 
 	code := 200
-	file,_ := c.FormFile("file")
-	err := c.SaveUploadedFile(file, fmt.Sprintf("%s/%s", SAVE_DST, file.Filename))
-	if err != nil{
-		log.Print(err)
-		code = 400
+	form, _ := c.MultipartForm()
+	files := form.File["file"]
+
+	for _, file := range files {
+		log.Println(file.Filename)
+
+		// Upload the file to specific dst.
+		err := c.SaveUploadedFile(file, fmt.Sprintf("%s/%s", SAVE_DST, file.Filename))
+		if err != nil{
+			log.Print(err)
+			code = 400
+			break
+		}
 	}
 
 	c.Header("Access-Control-Allow-Origin", "*")
 	c.JSON(http.StatusOK, gin.H{
 		"code": code,
-		"msg": fmt.Sprintf("'%s' uploaded!", file.Filename),
+		"msg": fmt.Sprintf("'%d' files uploaded", len(files)),
 	})
 }
 
@@ -152,12 +160,19 @@ func UploadImagesDB(db *DB) gin.HandlerFunc{
 			log.Print(err)
 		}
 
-		checkinDate, name, imgUrl := checkinImage.CheckinDate, checkinImage.Name, checkinImage.ImgUrl
+		checkinDate, name, imgUrls := checkinImage.CheckinDate, checkinImage.Name, checkinImage.ImgUrls
 
-		_, err = db.db.Exec(fmt.Sprintf(`
-			INSERT INTO %s(checkin_date, name, img_url) VALUES
-				('%s', '%s', '%s')
-		`, IMG_DB_NAME, checkinDate, name, imgUrl))
+		sql := fmt.Sprintf("INSERT INTO %s (checkin_date, name, img_url) VALUES", IMG_DB_NAME)
+
+		for i, url := range imgUrls {
+			if (i != len(imgUrls) - 1) {
+				sql += fmt.Sprintf(`('%s', '%s', '%s'),`, checkinDate, name, url)
+			} else {
+				sql += fmt.Sprintf(`('%s', '%s', '%s');`, checkinDate, name, url)
+			}
+		}
+
+		_, err = db.db.Exec(sql)
 
 		if err != nil {
 			log.Print(err)
@@ -167,7 +182,7 @@ func UploadImagesDB(db *DB) gin.HandlerFunc{
 		c.Header("Access-Control-Allow-Origin", "*")
 		c.JSON(http.StatusOK, gin.H{
 			"code": code,
-			"msg": fmt.Sprintf("'%s' uploaded to db", imgUrl),
+			"msg": fmt.Sprintf("%d images uploaded to db", len(imgUrls)),
 		})
 	}
 	return gin.HandlerFunc(fn)

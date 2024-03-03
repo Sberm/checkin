@@ -279,10 +279,11 @@ export default function PageRoot() {
 	let [uploadPercent, setPercent] = useState(0)
 	let [uploadStatus, setUploadStatus] = useState("上传中")
 
+	const urlParams = new URLSearchParams(window.location.search);
+	name = urlParams.get('name');
+
 	useEffect(() => {
 		document.title = '点击签到';
-		const urlParams = new URLSearchParams(window.location.search);
-		name = urlParams.get('name');
 
 		const getImages = async () => {
 			await fetchImages(setImages)
@@ -300,7 +301,7 @@ export default function PageRoot() {
 		<>
 			{uploading && <ProgressBar uploadPercent={uploadPercent} uploadStatus={uploadStatus}/>}
 
-			<h1>点击签到</h1>
+			<h1>{`欢迎回来, ${name}`}</h1>
 			<div className="checkin-background">
 				<a href="javascript:void()">
 					<input type="file" id="checkin-image" name="checkin-image" multiple accept="image/*" /><br/>

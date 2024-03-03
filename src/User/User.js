@@ -215,6 +215,8 @@ function UploadButton(props) {
 					}
 					getImages()
 
+					// 清空文件input栏
+					document.getElementById("checkin-image").value = null
 				} else {
 					props.setUploadStatus("上传失败")
 				}

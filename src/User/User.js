@@ -54,27 +54,7 @@ function cut(data, index, days) {
 	return [...data.slice(left, imageIndex - 1)]
 }
 
-async function uploadImages() {
-	// try {
-	// 	const url = `https://sberm.cn/checkin-upload-imgs`
-	// 	const formData = new FormData()
-	// 	formData.append("file", imgFile)
-
-	// 	const responseR = await fetch(url, {
-	// 		method: "POST",
-	// 		headers: {
-	// 			Accept: 'application/json',
-	// 		},
-	// 		mode: "cors",
-	// 		body: formData
-	// 	})
-
-	// 	const response = await responseR.json()
-	// 	return response.code
-	// } catch(err) {
-	// 	console.log(err)
-	// }
-	 
+async function uploadImages(setPercent) {
 
 	const p = new Promise(function (resolve, reject) {
 		const url = "https://sberm.cn/checkin-upload-imgs"
@@ -82,18 +62,19 @@ async function uploadImages() {
 		let formData = new FormData()
 		formData.append("file", imgFile)
 
-		if (xhr.readyState == 4) {
-			resolve(JSON.parse(xhr.response));
+		xhr.onload = () => {
+			const res = JSON.parse(xhr.response)
+			resolve(res);
 		}
 
 		xhr.upload.addEventListener("progress", (event) => {
-			let complete = (event.loaded / event.total * 100 | 0);
-			console.log(complete)
+			let complete = (event.loaded / event.total * 100 | 0)
+			setPercent(complete)
 		})
 
 		xhr.upload.addEventListener("load", (event) => {
-			console.log("loaded")
 		});
+
 		xhr.open("POST", url, true)
 		xhr.send(formData)
 	})
@@ -202,31 +183,40 @@ function UploadButton(props) {
 					return
 				}
 
+
 				const md5Suffix = await md5FromFile();
-				//console.log("md5Suffix,",md5Suffix);
 
 				const fileName = file.name;
 				const lastDot = fileName.lastIndexOf(".");
 				const name = fileName.substring(0, lastDot); 
 				const ext = fileName.substring(lastDot+1);
-				
+
 				// write image file
 				imgFile = new File([file], `${name}-${md5Suffix}.${ext}`, {
 					type: file.type,
 					lastModified: file.lastModified,
 				});
 
-				let a = uploadImages() === 200 ? true : false
+				props.setUploading(true)
+				props.setUploadStatus("上传中")
+
+				let a = await uploadImages(props.setPercent) === 200 ? true : false
 				let b = await uploadImagesDB() === 200 ? true : false
 				let c = await checkin() === 200 ? true : false
 				let code = a && b && c
 
 				if(code) {
-					alert("上传成功")
-					window.location.reload();
+					props.setUploadStatus("上传成功")
+					const getImages = async () => {
+						await fetchImages(props.setImages)
+					}
+					getImages()
+
 				} else {
-					alert("上传失败")
+					props.setUploadStatus("上传失败")
 				}
+
+				setTimeout(() => props.setUploading(false), 3000)
 			}
 		}>上传图片</button>
 	)
@@ -250,6 +240,24 @@ function PopUp(props) {
 	)
 }
 
+function ProgressBar(props) {
+	const progress = props.uploadPercent
+	const statuss = props.uploadStatus
+	return (
+		<>
+			<div style={{maxHeight: "50px", width: "100%", position: "fixed", top: "20px", display: "flex", justifyContent: "center", alignItems: "center"}}>
+				<div className="pbarw" style={{padding: "0 16px", backgroundColor: "white", borderRadius: "20px", display: "flex", alignItems: "center", justifyContent: "center", gap: "10px"}}>
+					<span style={{width: "fix-content", fontWeight: "bold"}}>{statuss}</span>
+					<div className="progress-bar">
+							<div style={{borderRadius: "20px", height: "9px", width: `${progress}%`, backgroundColor: "#58DB43"}}></div>
+					</div>
+					<span>{`${progress}%`}</span>
+				</div>
+			</div>
+		</>
+	)
+}
+
 function compareDate(d1, d2) {
 	const d1t = d1.getTime()
 	const d2t = d2.getTime()
@@ -261,6 +269,10 @@ function compareDate(d1, d2) {
 export default function PageRoot() {
 	let [pop, setPop] = useState(false)
 	let [images, setImages] = useState([])
+	// progress bar
+	let [uploading, setUploading] = useState(false)
+	let [uploadPercent, setPercent] = useState(0)
+	let [uploadStatus, setUploadStatus] = useState("上传中")
 
 	useEffect(() => {
 		document.title = '点击签到';
@@ -281,13 +293,16 @@ export default function PageRoot() {
 
 	return (
 		<>
+			{uploading && <ProgressBar uploadPercent={uploadPercent} uploadStatus={uploadStatus}/>}
+
 			<h1>点击签到</h1>
 			<div className="checkin-background">
 				<a href="javascript:void()">
 					<input type="file" id="checkin-image" name="checkin-image" accept="image/*" /><br/>
 				</a>
 				<CheckinButton />&nbsp;&nbsp;
-			 	<UploadButton />
+			 	<UploadButton setUploading={setUploading} setPercent={setPercent} setUploadStatus={setUploadStatus} setImages={setImages}/>
+
 				<p>历史截图:</p>
 				<div className="checkin-imgs" key={images}>
 					{images.map((image) => {

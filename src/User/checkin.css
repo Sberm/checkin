@@ -1,5 +1,18 @@
 @media (min-width:120px) and (max-width:1025px){ /* smartphones, iPhone, portrait 480x320 phones */
 
+	.pbarw {
+		width: 80%;
+	}
+
+	.progress-bar {
+		height: 25px;
+		flex: 1; 
+		display: flex;
+		align-items: center;
+		justify-content: flex-start;
+		padding: 0 5px;
+	}
+
 	p.date {
 		color: #15A100;
 		font-size: 1.4rem;
@@ -136,6 +149,20 @@
 }
 
 @media (min-width:1025px) { 
+
+	.pbarw {
+		width: 50%;
+	}
+
+	.progress-bar {
+		height: 25px;
+		width: 10rem;
+		flex: 1; 
+		display: flex;
+		align-items: center;
+		justify-content: flex-start;
+		padding: 0 8px;
+	}
 
 	p.date {
 		color: #15A100;

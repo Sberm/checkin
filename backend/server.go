@@ -244,7 +244,8 @@ func sendEmail(recipients []User, consec []int) {
 	var body string
 	for i, recipient := range recipients {
 
-		fmt.Println("Sending email notification to:", recipient.name)
+		// log
+		fmt.Sprintln("Sending email notification to: %s, miss check-in %d days", recipient.name, consec[i])
 
 		subject := fmt.Sprintf("Subject: 您%s没有打卡",date)
 		mime := "MIME-version: 1.0\r\nContent-Type: text/html; charset=utf-8\r\n\r\n"

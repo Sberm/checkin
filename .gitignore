@@ -34,3 +34,6 @@ server
 
 # in case
 backend
+
+# for readme
+!checkin.png
